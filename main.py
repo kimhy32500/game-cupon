@@ -8,7 +8,7 @@ from webdriver_manager.chrome import ChromeDriverManager
 
 # 우리가 만든 모듈들 임포트
 import path1  # 로그인 (30초 카운트다운)
-import path2  # 라운지 진입 & 배너 제거
+import path2  # 트릭컬 리바이브 라운지 진입 & 배너 제거
 import path3  # 키워드 검색
 import path4  # 글 필터링 & 클릭 진입
 import path5  # 본문 쿠폰 추출
