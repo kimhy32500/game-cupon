@@ -13,13 +13,13 @@ Libraries: Selenium, PyAutoGUI, Re(Regex), Pyperclip
 
 # 📂 구성 파일
 .
-├── main.py            # [실행 파일] 전체 프로세스를 제어하고 실행함
-├── path1.py           # [모듈] 로그인 선택적 수행
-├── path2.py           # [모듈] 라운지 이동
-├── path3.py           # [모듈] 검색 진행
-├── path4.py           # [모듈] 검색 결과 정렬
-├── path5.py           # [모듈] 본문 진입 및 쿠폰 코드 추출
-├── account.txt        # 아이디 및 패스워드 관리
-├── requirements.txt   # 설치가 필요한 라이브러리 목록
-├── Project_Detail.pdf # 프로젝트 상세 설명서
+├── main.py            # [실행 파일] 전체 프로세스 통합 제어 (역순 처리 로직 포함)
+├── path1.py           # [로그인] 클립보드 활용 캡차 우회 로그인
+├── path2.py           # [이동] 대상 게임 라운지 자동 진입
+├── path3.py           # [검색] 키워드 기반 게시글 검색
+├── path4.py           # [수집] 최신순 정렬 및 상위 게시글 URL 3개 추출 (스크롤 로딩)
+├── path5.py           # [추출] 본문 내 영문/숫자 혼합 쿠폰 코드 및 기한 추출
+├── path6.py           # [저장] 최신순 메모장 기록 및 중복 방지 로직
+├── account.txt        # 아이디 및 패스워드 관리 (보안 주의)
+├── requirements.txt   # 라이브러리 의존성 관리
 └── README.md          # 프로젝트 설명서
