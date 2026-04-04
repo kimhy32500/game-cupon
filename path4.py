@@ -4,61 +4,72 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
-def filter_by_gm(driver):
+def get_coupon_post_urls(driver):
     try:
-        print("\n🎯 GM아멜리아 게시글 필터링 시작...")
+        print("\n🎯 최신순 정렬 및 데이터 로딩 시작...")
         
-        # 1. 정렬 버튼 처리 (최신순 클릭)
+        # 1. 최신순 정렬 클릭 (안전장치)
         try:
-            sort_btn = WebDriverWait(driver, 7).until(
+            sort_btn = WebDriverWait(driver, 5).until(
                 EC.element_to_be_clickable((By.XPATH, "//button[contains(., '최신순')] | //span[contains(., '최신순')]"))
             )
             driver.execute_script("arguments[0].click();", sort_btn)
-            print("✅ 최신순 정렬 클릭 완료")
-            time.sleep(3) # 목록이 완전히 바뀔 때까지 충분히 대기
+            time.sleep(3) 
         except:
-            print("ℹ️ 최신순 버튼 클릭 실패 (계속 진행)")
+            pass
 
-        # 2. 게시글 목록을 찾을 때까지 최대 10초 대기 (강력한 선택자 사용)
-        # 네이버 검색 결과의 공통적인 리스트 구조를 타겟팅합니다.
-        wait = WebDriverWait(driver, 10)
-        try:
-            # 여러 개의 클래스 후보 중 하나라도 나타나면 잡습니다.
-            articles = wait.until(lambda d: d.find_elements(By.CSS_SELECTOR, 
-                "div[class*='article_item'], div[class*='Card_article'], li[class*='search_result_item'], [class*='result_article_title']"))
-            print(f"✅ 게시글 요소 발견! ({len(articles)}개)")
-        except:
-            print("🛑 게시글 목록을 로드하지 못했습니다.")
-            return False
+        # 2. 스크롤을 충분히 내려서 아래쪽 'GM아멜리아' 글 로딩
+        for _ in range(3):
+            driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+            time.sleep(1.5)
 
-        # 3. 작성자와 키워드 필터링
-        target_gm = "GM아멜리아"
+        # 3. [핵심] 'GM아멜리아' 텍스트가 들어있는 모든 카드(아이템) 요소를 찾음
+        # 네이버 라운지 검색 결과의 각 아이템 단위를 타겟팅합니다.
+        items = driver.find_elements(By.XPATH, "//div[contains(@class, 'item')] | //li[contains(@class, 'item')]")
         
-        for article in articles:
-            # 텍스트 추출 시, 제목뿐만 아니라 작성자 정보가 포함된 부모 영역까지 넓게 훑습니다.
-            # 알려주신 title 클래스를 포함하는 상위 덩어리를 찾습니다.
-            try:
-                # 해당 게시글 주변 텍스트 전체를 긁어옵니다.
-                content = article.text
-                
-                # 'GM아멜리아'가 있고 '[쿠폰]'이 제목에 포함된 경우
-                if target_gm in content or "[쿠폰]" in content:
-                    print(f"✨ 최신 쿠폰글 발견! 내용: {content.split('\n')[0]}")
-                    
-                    # 안정적인 클릭을 위해 자바스크립트 실행
-                    driver.execute_script("arguments[0].scrollIntoView(true);", article)
-                    time.sleep(0.5)
-                    driver.execute_script("arguments[0].click();", article)
-                    
-                    print("🚀 게시글 진입 시도 중...")
-                    time.sleep(3)
-                    return True
-            except:
-                continue
+        if not items:
+            # 클래스가 다를 경우를 대비해 모든 div 중 텍스트가 있는 것들 탐색
+            items = driver.find_elements(By.CSS_SELECTOR, "div[class*='Card'], div[class*='Item']")
 
-        print("⚠️ GM아멜리아의 게시글을 찾지 못했습니다.")
-        return False
+        target_urls = []
+        print(f"🔎 화면 내 {len(items)}개 영역 분석 중...")
+
+        for item in items:
+            if len(target_urls) >= 3:
+                break
+            
+            full_text = item.text
+            # 조건: 작성자가 'GM아멜리아'이고 제목에 '[쿠폰]'이 들어감
+            if "GM아멜리아" in full_text and "[쿠폰]" in full_text:
+                try:
+                    # 해당 아이템 내부에 있는 제목 링크(a 태그) 추출
+                    # 보통 제목이 가장 큰 링크이므로 첫 번째 a 태그를 가져옵니다.
+                    link_element = item.find_element(By.TAG_NAME, "a")
+                    url = link_element.get_attribute("href")
+                    
+                    if url and url not in target_urls:
+                        title_snippet = full_text.split('\n')[0] # 첫 줄을 제목으로 간주
+                        target_urls.append(url)
+                        print(f"✅ 수집 성공: {title_snippet[:20]}...")
+                except:
+                    continue
+
+        # 4. [비상 수단] 만약 위 방법으로도 못 찾았다면 전체 a 태그 뒤지기
+        if not target_urls:
+            print("⚠️ 1차 수집 실패, 전체 링크 재검색 중...")
+            all_links = driver.find_elements(By.XPATH, "//a[contains(@href, 'article')]")
+            for link in all_links:
+                if len(target_urls) >= 3: break
+                # 링크의 텍스트나 부모 텍스트에 조건이 맞는지 확인
+                parent_txt = link.find_element(By.XPATH, "./..").text
+                if "[쿠폰]" in link.text and "GM아멜리아" in parent_txt:
+                    url = link.get_attribute("href")
+                    if url not in target_urls:
+                        target_urls.append(url)
+                        print(f"🔗 비상 수집 성공: {link.text[:20]}...")
+
+        return target_urls
 
     except Exception as e:
-        print(f"🛑 path4 상세 오류: {e}")
-        return False
+        print(f"🛑 path4 오류: {e}")
+        return []
