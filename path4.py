@@ -1,4 +1,3 @@
-# path4.py
 import time
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
@@ -8,27 +7,22 @@ def get_coupon_post_urls(driver):
     try:
         print("\n🎯 최신순 정렬 및 데이터 로딩 시작...")
         
-        # 1. 최신순 정렬 클릭 (안전장치)
         try:
             sort_btn = WebDriverWait(driver, 5).until(
                 EC.element_to_be_clickable((By.XPATH, "//button[contains(., '최신순')] | //span[contains(., '최신순')]"))
             )
             driver.execute_script("arguments[0].click();", sort_btn)
-            time.sleep(3) 
-        except:
-            pass
+            time.sleep(3)
+        except Exception as e:
+            print(f"최신순 정렬 버튼 없음 (무시): {e}")
 
-        # 2. 스크롤을 충분히 내려서 아래쪽 'GM아멜리아' 글 로딩
         for _ in range(3):
             driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
             time.sleep(1.5)
 
-        # 3. [핵심] 'GM아멜리아' 텍스트가 들어있는 모든 카드(아이템) 요소를 찾음
-        # 네이버 라운지 검색 결과의 각 아이템 단위를 타겟팅합니다.
         items = driver.find_elements(By.XPATH, "//div[contains(@class, 'item')] | //li[contains(@class, 'item')]")
         
         if not items:
-            # 클래스가 다를 경우를 대비해 모든 div 중 텍스트가 있는 것들 탐색
             items = driver.find_elements(By.CSS_SELECTOR, "div[class*='Card'], div[class*='Item']")
 
         target_urls = []
@@ -39,34 +33,35 @@ def get_coupon_post_urls(driver):
                 break
             
             full_text = item.text
-            # 조건: 작성자가 'GM아멜리아'이고 제목에 '[쿠폰]'이 들어감
             if "GM아멜리아" in full_text and "[쿠폰]" in full_text:
                 try:
-                    # 해당 아이템 내부에 있는 제목 링크(a 태그) 추출
-                    # 보통 제목이 가장 큰 링크이므로 첫 번째 a 태그를 가져옵니다.
                     link_element = item.find_element(By.TAG_NAME, "a")
                     url = link_element.get_attribute("href")
                     
                     if url and url not in target_urls:
-                        title_snippet = full_text.split('\n')[0] # 첫 줄을 제목으로 간주
+                        title_snippet = full_text.split('\n')[0]
                         target_urls.append(url)
                         print(f"✅ 수집 성공: {title_snippet[:20]}...")
-                except:
+                except Exception as e:
+                    print(f"링크 추출 실패: {e}")
                     continue
 
-        # 4. [비상 수단] 만약 위 방법으로도 못 찾았다면 전체 a 태그 뒤지기
         if not target_urls:
             print("⚠️ 1차 수집 실패, 전체 링크 재검색 중...")
             all_links = driver.find_elements(By.XPATH, "//a[contains(@href, 'article')]")
             for link in all_links:
-                if len(target_urls) >= 3: break
-                # 링크의 텍스트나 부모 텍스트에 조건이 맞는지 확인
-                parent_txt = link.find_element(By.XPATH, "./..").text
-                if "[쿠폰]" in link.text and "GM아멜리아" in parent_txt:
-                    url = link.get_attribute("href")
-                    if url not in target_urls:
-                        target_urls.append(url)
-                        print(f"🔗 비상 수집 성공: {link.text[:20]}...")
+                if len(target_urls) >= 3:
+                    break
+                try:
+                    parent_txt = link.find_element(By.XPATH, "./..").text
+                    if "[쿠폰]" in link.text and "GM아멜리아" in parent_txt:
+                        url = link.get_attribute("href")
+                        if url not in target_urls:
+                            target_urls.append(url)
+                            print(f"🔗 비상 수집 성공: {link.text[:20]}...")
+                except Exception as e:
+                    print(f"비상 수집 링크 실패: {e}")
+                    continue
 
         return target_urls
 

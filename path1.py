@@ -4,21 +4,21 @@ import pyperclip
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 
-def login_naver(driver, nid, npw):
+def login_naver(driver, username, password):
     try:
-        print(f"🚀 네이버 로그인 시도 중... (ID: {nid})")
+        print(f"🚀 네이버 로그인 시도 중... (ID: {username})")
         driver.get("https://nid.naver.com/nidlogin.login")
         time.sleep(1)
 
         # 1. 아이디/비번 입력 (캡차 회피를 위한 복사 붙여넣기)
         tag_id = driver.find_element(By.NAME, 'id')
         tag_id.click()
-        pyperclip.copy(nid)
+        pyperclip.copy(username)
         tag_id.send_keys(Keys.CONTROL, 'v')
         
         tag_pw = driver.find_element(By.NAME, 'pw')
         tag_pw.click()
-        pyperclip.copy(npw)
+        pyperclip.copy(password)
         tag_pw.send_keys(Keys.CONTROL, 'v')
         
         driver.find_element(By.ID, 'log.login').click()

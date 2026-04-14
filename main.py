@@ -4,22 +4,19 @@ from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
 from webdriver_manager.chrome import ChromeDriverManager
+from dotenv import load_dotenv
 
 import path1, path2, path3, path4, path5, path6
 
+load_dotenv()
+
 def get_login_info():
-    current_path = os.path.dirname(os.path.abspath(__file__))
-    file_path = os.path.join(current_path, "account.txt")
-    if not os.path.exists(file_path): return None, None
-    try:
-        with open(file_path, "r", encoding="utf-8") as f:
-            lines = [line.strip() for line in f.readlines() if line.strip()]
-            if len(lines) >= 2: return lines[0], lines[1]
-    except: return None, None
-    return None, None
+    username = os.getenv("NAVER_ID")
+    password = os.getenv("NAVER_PW")
+    return username, password
 
 def main():
-    uid, upw = get_login_info()
+    username, password = get_login_info()
     options = Options()
     options.add_experimental_option("detach", True)
     options.add_argument("--disable-blink-features=AutomationControlled")
@@ -27,9 +24,12 @@ def main():
 
     try:
         # [1~3단계] 로그인 및 검색
-        if uid and upw:
-            print(f"\n--- 1단계: 로그인 진행 ({uid}) ---")
-            path1.login_naver(driver, uid, upw)
+        if username and password:
+            print(f"\n--- 1단계: 로그인 진행 ({username}) ---")
+            login_success = path1.login_naver(driver, username, password)
+            if not login_success:
+                print("🛑 로그인 실패로 작업을 중단합니다.")
+                return
         else:
             print("\n--- 1단계: 비로그인 모드 ---")
 
