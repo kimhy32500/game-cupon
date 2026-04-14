@@ -26,10 +26,7 @@ def main():
         # [1~3단계] 로그인 및 검색
         if username and password:
             print(f"\n--- 1단계: 로그인 진행 ({username}) ---")
-            login_success = path1.login_naver(driver, username, password)
-            if not login_success:
-                print("🛑 로그인 실패로 작업을 중단합니다.")
-                return
+            path1.login_naver(driver, username, password)
         else:
             print("\n--- 1단계: 비로그인 모드 ---")
 
