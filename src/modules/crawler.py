@@ -2,6 +2,7 @@ import time
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from src.modules import extractor  # 같은 modules 폴더 내 모듈 참조
 
 def get_coupon_post_urls(driver):
     try:
@@ -29,7 +30,9 @@ def get_coupon_post_urls(driver):
         print(f"🔎 화면 내 {len(items)}개 영역 분석 중...")
 
         for item in items:
-            if len(target_urls) >= 3:
+            import os
+            MAX_POSTS = int(os.getenv("MAX_POSTS", 3))  # .env 없으면 기본값 3
+            if len(target_urls) >= MAX_POSTS:
                 break
             
             full_text = item.text
@@ -50,8 +53,10 @@ def get_coupon_post_urls(driver):
             print("⚠️ 1차 수집 실패, 전체 링크 재검색 중...")
             all_links = driver.find_elements(By.XPATH, "//a[contains(@href, 'article')]")
             for link in all_links:
-                if len(target_urls) >= 3:
-                    break
+                import os
+                MAX_POSTS = int(os.getenv("MAX_POSTS", 3))  # .env 없으면 기본값 3
+                if len(target_urls) >= MAX_POSTS:
+                                    break
                 try:
                     parent_txt = link.find_element(By.XPATH, "./..").text
                     if "[쿠폰]" in link.text and "GM아멜리아" in parent_txt:

@@ -2,7 +2,8 @@
 selenium>=4.10.0
 webdriver-manager>=4.0.0
 
-# Security & Utilities
+# UI
+streamlit>=1.30.0
+
+# Utilities
 python-dotenv>=1.0.0
-pyperclip>=1.8.2
-pyautogui>=0.9.54

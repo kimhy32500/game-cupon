@@ -1,11 +1,16 @@
-import time
 import re
 from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 
 def extract_coupon_info(driver):
     try:
         print("📄 본문 정밀 분석 중 (영문 전용 쿠폰 대응)...")
-        time.sleep(3)
+
+        # 본문 로딩 대기
+        WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.CSS_SELECTOR, "p.se-text-paragraph"))
+        )
 
         paragraphs = driver.find_elements(By.CSS_SELECTOR, "p.se-text-paragraph")
         coupon_code = None
