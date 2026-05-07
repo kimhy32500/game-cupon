@@ -16,6 +16,7 @@ Libraries: python-dotenv: 환경변수(.env) 기반 설정 관리, re (Regex): �
 LLM: Gemini 1.5 Flash(설계 및 작성), Claude(보완)
 
 📂 구성 파일
+'''
 .
 ├── app.py # [메인] Streamlit UI 구성 및 전체 프로세스 제어
 ├── extractor.py # [추출] 본문 내 쿠폰 코드 및 기한 정밀 분석 로직
@@ -27,6 +28,7 @@ LLM: Gemini 1.5 Flash(설계 및 작성), Claude(보완)
 ├── .env                # 환경변수 (타겟 URL 설정 등)
 ├── requirements.txt    # 프로젝트 의존성 관리 파일
 └── README.md           # 프로젝트 설명서
+'''
 
 ⚙️ 실행 방법 (Setup Guide)
 1. 사전 준비
